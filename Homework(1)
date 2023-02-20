@@ -1,0 +1,35 @@
+!pip install numpy==1.22.0
+!pip install geopandas mapclassify
+!pip install keplergl
+!pip install osmnx
+
+from keplergl import KeplerGl
+import osmnx as ox
+from google.colab import output
+
+output.enable_custom_widget_manager()
+
+CITY_NAME = 'Paris'
+city = ox.geocode_to_gdf(CITY_NAME)
+city.explore (tiles = "CartoDB positron")
+
+tags = {'admin_level': '9'}
+boundaries = ox.geometries_from_polygon(city.unary_union, tags)
+boundaries.head()
+
+boundaries.explore(tiles="CartoDB positron")
+
+DISTRICT_NAME = 'Butte-Montmartre, Paris'
+district = ox.geocode_to_gdf(DISTRICT_NAME)
+tags = {'building':True}
+buildings = ox.geometries_from_polygon (district.unary_union, tags)
+buildings.explore(tiles="CartoDB positron")
+
+buildings.reset_index(inplace=True)
+buildings.head()
+
+map_paris = KeplerGl(height = 700)
+map_paris.add_data(data = city.copy(), name = 'Borders of Paris')
+map_paris.add_data(data = boundaries.copy(), name = 'Districts of Paris')
+map_paris.add_data(data = buildings.copy(), name = 'Buildings of Butte-Montmartre')
+map_paris
